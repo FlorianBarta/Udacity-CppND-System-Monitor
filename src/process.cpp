@@ -17,8 +17,7 @@ Process::Process(const int pid) : pid_(pid) {
 
 float Process::calculateCpu(int pid) {
     long activeJiffies = LinuxParser::ActiveJiffiesPid(pid);
-    long seconds = LinuxParser::UpTime() + 1 - LinuxParser::UpTime(pid);
-    float value = ((activeJiffies * 1.0 / sysconf(_SC_CLK_TCK)) / (seconds * 1.0));
+    float value = ((activeJiffies * 1.0 / sysconf(_SC_CLK_TCK)) / (LinuxParser::UpTime(pid) * 1.0));
     this->cpu_utilization_ = value;
     return value;
 }
