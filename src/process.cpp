@@ -18,7 +18,7 @@ Process::Process(const int pid) : pid_(pid) {
 float Process::calculateCpu(int pid) {
     long activeJiffies = LinuxParser::ActiveJiffiesPid(pid);
     long seconds = LinuxParser::UpTime() + 1 - LinuxParser::UpTime(pid);
-    float value = 100 * ((activeJiffies * 1.0 / sysconf(_SC_CLK_TCK)) / (seconds * 1.0));
+    float value = ((activeJiffies * 1.0 / sysconf(_SC_CLK_TCK)) / (seconds * 1.0));
     this->cpu_utilization_ = value;
     return value;
 }
@@ -28,7 +28,14 @@ int Process::Pid() { return this->pid_; }
 
 float Process::CpuUtilization() {return calculateCpu(this->pid_);}
 
-string Process::Command() { return LinuxParser::Command(this->pid_);}
+string Process::Command() { 
+  string command = LinuxParser::Command(this->pid_);
+  if(command.length() > 40) {
+    command.resize(40);
+    command.append("...");
+  }
+  return command;
+}
 
 string Process::Ram() { return to_string((int)LinuxParser::Ram(this->pid_));}
 
@@ -38,5 +45,5 @@ long int Process::UpTime() { return LinuxParser::UpTime(this->pid_); }
 
 
 bool Process::operator<(Process const& a) const {
-  return (this->cpu_utilization_ > a.cpu_utilization_)? true : false;
+  return (this->cpu_utilization_ > a.cpu_utilization_);
 }

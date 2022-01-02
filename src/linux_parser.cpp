@@ -85,6 +85,7 @@ float LinuxParser::MemoryUtilization() {
       }
     }
   }
+  filestream.close();
   float utilization = (totalMem-freeMem)/totalMem;
   return utilization;
 }
@@ -105,15 +106,15 @@ long LinuxParser::UpTime() {
 
 long LinuxParser::Jiffies() {
   string line;
-  string cpu_string;
+  string cpuString;
   long value;
   long total_jiffies = 0;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
-      linestream >> cpu_string;
-      if(cpu_string == "cpu") {
+      linestream >> cpuString;
+      if(cpuString == "cpu") {
         while (linestream >> value) {
           total_jiffies += value;
         }
@@ -124,17 +125,17 @@ long LinuxParser::Jiffies() {
   return total_jiffies;
 }
 
-long LinuxParser::Jiffies(int cpu_id) {
+long LinuxParser::Jiffies(int cpuId) {
   string line;
-  string cpu_string;
+  string cpuString;
   long value;
   long total_jiffies = 0;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
-      linestream >> cpu_string;
-      if(cpu_string == "cpu"+std::to_string(cpu_id-1)) {
+      linestream >> cpuString;
+      if(cpuString == "cpu"+std::to_string(cpuId-1)) {
         while (linestream >> value) {
           total_jiffies += value;
         }
@@ -148,7 +149,6 @@ long LinuxParser::Jiffies(int cpu_id) {
 
 long LinuxParser::ActiveJiffiesPid(int pid) {
   string line;
-  string cpu_string;
   string value = "";
   long active_jiffies = 0;
   std::ifstream filestream(kProcDirectory + to_string(pid) + kStatFilename);
@@ -168,17 +168,17 @@ long LinuxParser::ActiveJiffiesPid(int pid) {
 }
 
 
-long LinuxParser::ActiveJiffies(int cpu_id) {
+long LinuxParser::ActiveJiffies(int cpuId) {
   string line;
-  string cpu_string;
+  string cpuString;
   long value;
   long active_jiffies = 0;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
-      linestream >> cpu_string;
-      if(cpu_string == "cpu"+std::to_string(cpu_id-1)) {
+      linestream >> cpuString;
+      if(cpuString == "cpu"+std::to_string(cpuId-1)) {
         int i = 0;
         while (linestream >> value) {
           i++;
@@ -194,29 +194,29 @@ long LinuxParser::ActiveJiffies(int cpu_id) {
   return active_jiffies;
 }
 
-long LinuxParser::IdleJiffies(int cpu_id) {
+long LinuxParser::IdleJiffies(int cpuId) {
   string line;
-  string cpu_string;
+  string cpuString;
   long value;
-  long idle_jiffies = 0;
+  long idleJiffies = 0;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
-      linestream >> cpu_string;
-      if(cpu_string == "cpu"+std::to_string(cpu_id-1)) {
+      linestream >> cpuString;
+      if(cpuString == "cpu"+std::to_string(cpuId-1)) {
         int i = 0;
         while (linestream >> value) {
           i++;
           if(i == CPUStates::kIdle_ || i == CPUStates::kIOwait_) {
-            idle_jiffies += value;
+            idleJiffies += value;
           }
         }
         break;
       }
     }
   }
-  return idle_jiffies;
+  return idleJiffies;
 }
 
 int LinuxParser::CpuCount() {  
@@ -301,7 +301,8 @@ float LinuxParser::Ram(int pid) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
       while (linestream >> key >> value) {
-        if (key == "VmSize:") {
+        //Used VmData instead of VmSize because Physical Memory is more significantly
+        if (key == "VmData:") {
           return value / 1000;
           break;
         } 
@@ -362,8 +363,8 @@ long LinuxParser::UpTime(int pid) {
       linestream >> key;
     }
     linestream >> value;
-    value = value / sysconf(_SC_CLK_TCK);
-    return value;
+    int upTimePid = UpTime() - value/sysconf(_SC_CLK_TCK);
+    return upTimePid;
   }
   return value;
 }

@@ -5,7 +5,7 @@
 
 class Processor {
  public:
-  float Utilization(int cpu_id, int cpu_count);  
+  double Utilization(int cpu_id, int cpu_count);  
 
   
  private:
@@ -15,7 +15,7 @@ class Processor {
   int currentTotal;
   int currentIdle;
   int currentActive;
-  float CalcuteLateUtilization(int cpu_id);
+  double CalcuteLateUtilization(int cpu_id);
 };
 
 #endif

@@ -3,7 +3,7 @@
 #include "linux_parser.h"
 
 
-float Processor::Utilization(int cpu_id, int cpu_count) {
+double Processor::Utilization(int cpu_id, int cpu_count) {
     size_t cpu_cnt = cpu_count;
     if(this->prevIdle.size() < cpu_cnt) {
         for (int i = 1; i <= cpu_count; i++)
@@ -27,7 +27,7 @@ float Processor::Utilization(int cpu_id, int cpu_count) {
         this->currentIdle = LinuxParser::IdleJiffies(cpu_id);
         this->currentActive = LinuxParser::ActiveJiffies(cpu_id);
         this->currentTotal = this->currentIdle + this->currentActive;
-        float utilization = CalcuteLateUtilization(cpu_id);
+        double utilization = CalcuteLateUtilization(cpu_id);
         this->prevIdle[cpu_id] = this->currentIdle;
         this->prevActive[cpu_id] = this->currentActive;
         this->prevTotal[cpu_id] = this->currentTotal;
@@ -35,7 +35,7 @@ float Processor::Utilization(int cpu_id, int cpu_count) {
     }
 }
 
-float Processor::CalcuteLateUtilization(int cpu_id) {
+double Processor::CalcuteLateUtilization(int cpu_id) {
     int totald = this->currentTotal - this->prevTotal[cpu_id];
     int idled = this->currentIdle - this->prevIdle[cpu_id];
 
